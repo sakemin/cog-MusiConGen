@@ -4,9 +4,8 @@ This is the cog implementation of paper: "MusiConGen: Rhythm and chord control f
 
 MusiConGen is based on pretrained [Musicgen](https://github.com/facebookresearch/audiocraft) with additional controls: Rhythm and Chords. The project contains inference, training code and training data (youtube list). 
 
-<br />
-[Arxiv Paper]() | [Demo](https://musicongen.github.io/musicongen_demo/) 
-<br />
+[Arxiv Paper](https://arxiv.org/abs/2407.15060) | [Demo](https://musicongen.github.io/musicongen_demo/) 
+
 You can demo this model or learn how to use it with Replicate's [API](https://replicate.com/sakemin/musicongen) here.
 
 # Run with Cog
