@@ -1,5 +1,5 @@
-audiocraft/__pycache__/
-audiocraft/ckpt/*
-audiocraft/output_samples
-audiocraft/training_weights/*
+__pycache__/
+ckpt/*
+output_samples
+training_weights/*
 **/.DS_Store

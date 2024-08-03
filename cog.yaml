@@ -1,0 +1,50 @@
+# Configuration for Cog ⚙️
+# Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+  cuda: "11.7"
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - ffmpeg
+    - unzip
+
+  # python version in the form '3.8' or '3.8.12'
+  python_version: "3.9"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "torch==2.0.1"
+    - "av==11.0.0"
+    - "einops"
+    - "flashy>=0.0.1"
+    - "hydra-core>=1.1"
+    - "hydra_colorlog"
+    - "julius"
+    - "num2words"
+    - "numpy==1.24.4"
+    - "sentencepiece"
+    - "spacy==3.6.1"
+    - "torchaudio>=2.0.0"
+    - "tqdm"
+    - "transformers==4.31.0"
+    - "xformers==0.0.22"
+    - "demucs"
+    - "librosa"
+    - "soundfile"
+    - "torchmetrics"
+    - "encodec"
+    - "protobuf"
+    - "torchvision"
+    - "torchtext"
+    - "pesq"
+    - "pystoi"
+    - "pandas"
+    - "pretty_midi"
+  
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+# train: "train.py:train"
+
