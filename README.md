@@ -1,158 +1,139 @@
-# MusiConGen
-
-
-This is the official implementation of paper: "MusiConGen: Rhythm and chord control for Transformer-based text-to-music generation" in Proc. Int. Society for Music Information Retrieval Conf. (ISMIR), 2024.
+# Cog Implementation of MusiConGen
+[![Replicate](https://replicate.com/sakemin/musicongen/badge)](https://replicate.com/sakemin/musicongen) 
+This is the cog implementation of paper: "MusiConGen: Rhythm and chord control for Transformer-based text-to-music generation" in Proc. Int. Society for Music Information Retrieval Conf. (ISMIR), 2024.
 
 MusiConGen is based on pretrained [Musicgen](https://github.com/facebookresearch/audiocraft) with additional controls: Rhythm and Chords. The project contains inference, training code and training data (youtube list). 
 
 <br />
-
 [Arxiv Paper]() | [Demo](https://musicongen.github.io/musicongen_demo/) 
-
 <br />
+You can demo this model or learn how to use it with Replicate's [API](https://replicate.com/sakemin/musicongen) here.
 
-## Installation
-MusiConGen requires Python 3.9 and PyTorch 2.0.0. You can run:
-```bash
-pip install -r requirements.txt
+# Run with Cog
+
+[Cog](https://github.com/replicate/cog) is an open-source tool that packages machine learning models in a standard, production-ready container. 
+You can deploy your packaged model to your own infrastructure, or to [Replicate](https://replicate.com/), where users can interact with it via web interface or API.
+
+## Prerequisites 
+
+**Cog.** Follow these [instructions](https://github.com/replicate/cog#install) to install Cog, or just run: 
+
+```
+sudo curl -o /usr/local/bin/cog -L "https://github.com/replicate/cog/releases/latest/download/cog_$(uname -s)_$(uname -m)"
+sudo chmod +x /usr/local/bin/cog
 ```
 
-We also recommend having `ffmpeg` installed, either through your system or Anaconda:
-```bash
-sudo apt-get install ffmpeg
-# Or if you are using Anaconda or Miniconda
-conda install 'ffmpeg<5' -c  conda-forge
+Note, to use Cog, you'll also need an installation of [Docker](https://docs.docker.com/get-docker/).
+
+* **GPU machine.** You'll need a Linux machine with an NVIDIA GPU attached and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker) installed. If you don't already have access to a machine with a GPU, check out our [guide to getting a 
+GPU machine](https://replicate.com/docs/guides/get-a-gpu-machine).
+
+## Step 1. Clone this repository
+
+```sh
+git clone https://github.com/sakemin/cog-musicongen
+```
+The model weight is at [link](https://huggingface.co/Cyan0731/MusiConGen/tree/main).
+Move the model weight `compression_state_dict.bin` and `state_dict.bin` to directory `ckpt/musicongen`.
+
+## Step 2. Run the model
+
+To run the model, you need a local copy of the model's Docker image. You can satisfy this requirement by specifying the image ID in your call to `predict` like:
+
+```
+cog predict r8.im/sakemin/musicgencongen@sha256:a05ec8bdf5cc902cd849077d985029ce9b05e3dfb98a2d74accc9c94fdf15747 -i prompt="k pop, cool synthwave, drum and bass with jersey club beats" -i duration=30 -i text_chords="C G A:min F" -i bpm=140 -i time_sig="4/4"
 ```
 
-<br />
+For more information, see the Cog section [here](https://replicate.com/sakemin/musicongen/api#run)
 
-## Model
-The model is based on the pretrained MusicGen-melody(1.5B). For infernece, GPU with VRAM greater than 12GB is recommended. For training, GPU with VRAM greater than 24GB is recommended.
+Alternatively, you can build the image yourself, either by running `cog build` or by letting `cog predict` trigger the build process implicitly. For example, the following will trigger the build process and then execute prediction: 
 
-## Inference
-
-First, the model weight is at [link](https://huggingface.co/Cyan0731/MusiConGen/tree/main).
-Move the model weight `compression_state_dict.bin` and `state_dict.bin` to directory `audiocraft/ckpt/musicongen`.
-
-One can simply run inference script with the command to generate music with chord and rhythm condition:
-```shell
-cd audiocraft
-python generate_chord_beat.py
-``` 
-
-<br />
-
-
-## Training 
-
-### Training Data
-The training data is provided as json format in 5_genre_songs_list.json. The listed suffixes are for youtube links.
-
-### Data Preprocessing
-Before training, one should put audio data in `audiocraft/dataset/$DIR_OF_YOUR_DATA$/full`.
-And then run the preprocessing step by step:
-
-```shell
-cd preproc
+```
+cog predict -i prompt="k pop, cool synthwave, drum and bass with jersey club beats" -i duration=30 -i text_chords="C G A:min F" -i bpm=140 -i time_sig="4/4"
 ```
 
-### 1. demixing tracks
-To remove the vocal stem from the track, we use [Demucs](https://github.com/facebookresearch/demucs).
-In `main.py`, change `path_rootdir` to your directory and `ext_src` to the audio extention of your dataset (`'mp3'` or `'wav'`).
+Note, the first time you run `cog predict`, model weights and other requisite assets will be downloaded if they're not available locally. This download only needs to be executed once.
 
-```shell
-cd 0_demix
-python main.py
+# Run on replicate
+
+## Step 1. Ensure that all assets are available locally
+
+If you haven't already, you should ensure that your model runs locally with `cog predict`. This will guarantee that all assets are accessible. E.g., run: 
+
+```
+cog predict -i prompt="k pop, cool synthwave, drum and bass with jersey club beats" -i duration=30 -i text_chords="C G A:min F" -i bpm=140 -i time_sig="4/4"
 ```
 
-<br />
+## Step 2. Create a model on Replicate.
 
-### 2. beat/downbeat detection and cropping
-To extract beat and down beat of songs, you can use [BeatNet](https://github.com/mjhydri/BeatNet) or [Madmom](https://github.com/CPJKU/madmom) as the beat extrctor.
-For Beatnet user, change `path_rootdir` to your directory in `main_beat_nn.py`. For Madmom user, change `path_rootdir` to your directory in `main_beat.py`.
+Go to [replicate.com/create](https://replicate.com/create) to create a Replicate model. If you want to keep the model private, make sure to specify "private".
 
-Then accroding to the extracted beat and downbeat, each song is cropped into clips in `main_crop.py`. `path_rootdir` should also be changed to your dataset directory.
+## Step 3. Configure the model's hardware
 
-The last stage is to filter out the clips with low volumn. `path_rootdir` should be changed to `clip` directory.
+Replicate supports running models on variety of CPU and GPU configurations. For the best performance, you'll want to run this model on an A100 instance.
 
-```shell
-cd 1_beats-crop
-python main_beat.py
-python main_crop.py
-python main_filter.py
+Click on the "Settings" tab on your model page, scroll down to "GPU hardware", and select "A100". Then click "Save".
+
+## Step 4: Push the model to Replicate
+
+
+Log in to Replicate:
+
+```
+cog login
 ```
 
-<br />
+Push the contents of your current directory to Replicate, using the model name you specified in step 1:
 
-### 3. chord extraction
-To extract chord progression, we use [BTC-ISMIR2019](https://github.com/jayg996/BTC-ISMIR19).
-The `root_dir` in `main.py` should be changed to your clips data directory.
+```
+cog push r8.im/username/modelname
+```
+[Learn more about pushing models to Replicate.](https://replicate.com/docs/guides/push-a-model)
 
-```shell
-cd 2_chord/BTC-ISMIR19
-python main.py
+---
+# Prediction
+## Prediction Parameters
+- `prompt` (`string`) : A description of the music you want to generate.
+- `text_chords` (`string`) : A text based chord progression condition. Single uppercase alphabet character(eg. `C`) is considered as a major chord. Chord attributes like(`maj`, `min`, `dim`, `aug`, `min6`, `maj6`, `min7`, `minmaj7`, `maj7`, `7`, `dim7`, `hdim7`, `sus2` and `sus4`) can be added to the root alphabet character after `:`.(eg. `A:min7`) Each chord token splitted by `SPACE` is allocated to a single bar. If more than one chord must be allocated to a single bar, cluster the chords adding with `,` without any `SPACE`.(eg. `C,C:7 G, E:min A:min`)
+- `bpm` (`number`) : BPM condition for the generated output. Chord and rhythm conditions will be processed based on this value. This will be appended at the end of `prompt`.
+- `time_sig` (`string`) : Time signature value for the generate output. Chord and rhythm conditions will be processed based on this value. This will be appended at the end of `prompt`.
+- `duration` (`integer`) : Duration of the generated audio in seconds.(Default = 30, Maximum = 30)
+- `top_k` (`integer`) : Reduces sampling to the k most likely tokens.(Default = 250)
+- `top_p` (`number`) : Reduces sampling to tokens with cumulative probability of p. When set to `0` (default), top_k sampling is used.(Default = 0)
+- `temperature` (`number`) : Controls the 'conservativeness' of the sampling process. Higher temperature means more diversity.(Default = 1)
+- `classifier_free_guidance` (`integer`) : Increases the influence of inputs on the output. Higher values produce lower-varience outputs that adhere more closely to inputs.(Default = 3)
+- `output_format` (`string`) : Output format for generated audio.(Allowed values : `wav`, `mp3` / Default = `wav`)
+- `seed` (`integer`) : Seed for random number generator. If `None` or `-1`, a random seed will be used.
+  
+## Text Based Chord Conditioning
+### Text Chord Condition Format
+
+```
+<progression> ::= <bar> " " <bar>
+<bar> ::= <chord> "," <chord>
+<chord> ::= <note> ":" <shorthand>
+<note> ::= <natural> | <note> <modifier>
+<natural> ::= "A" | "B" | "C" | "D" | "E" | "F" | "G"
+<modifier> ::= "b" | "#"
+<shorthand> ::= "maj" | "min" | "dim" | "aug" | "maj7" | "min7" | "7" | "dim7" | "hdim7" | "minmaj7" | "maj6" | "min6" | "9" | "maj9" | "min9" | "sus4"
 ```
 
-<br />
+- `SPACE` is used as split token. Each splitted chunk is assigned to a single bar.
+	-	`C G E:min A:min`
+- When multiple chords must be assigned in a single bar, then append more chords with `,`.
+	-	`C G,G:7 E:min,E:min7 A:min`
+- Chord type can be specified after `:`.
+	- 	Just using a single uppercase alphabet(eg. `C`, `E`) is considered as a major chord.
+	-	 `maj`, `min`, `dim`, `aug`, `min6`, `maj6`, `min7`, `minmaj7`, `maj7`, `7`, `dim7`, `hdim7`, `sus2` and `sus4` can be appended with `:`.
+		- 	eg. `E:dim`, `B:sus2`
+- 'sharp' and 'flat' can be specified with `#` and `b`.
+	- 	eg. `E#:min` `Db`
+### BPM and Time Signature
+- To create chord chroma, `bpm` and `time_sig` values must be specified.
+	- `bpm` can be a float value. (eg. `132`, `60`)
+	- The format of `time_sig` is `(int)/(int)`. (eg. `4/4`, `3/4`, `6/8`, `7/8`, `5/4`)
+- `bpm` and `time_sig` values will be automatically concatenated after `prompt` description value, so you don't need to specify bpm or time signature information in the description for `prompt`.
 
-### 4. tags/description labeling (optional)
-For dataset crawled from website(e.g. youtube), the description of each song can be obtrained from crawled informaiton `crawl_info.json`(you can change the file name in `3_1_ytjsons2tags/main.py`). We use the title of youtube song as description. The `root_dir` in `main.py` should be changed to your clips data directory.
-
-```shell
-cd 3_1_ytjsons2tags
-python main.py
-```
-
-For dataset without information to describe, you can use [Essentia](https://github.com/MTG/essentia) to extract instrument and genre.
-```shell
-cd 3_tags/essentia
-python main.py
-```
-
-After json files are created, run `dump_jsonl.py` to generate jsonl file in training directory.
-
-<br />
-
-### Training stage
-The training weight of MusiConGen is at [link](https://huggingface.co/Cyan0731/MusiConGen_training/tree/main). Please place it into the directory `MusiConGen/audiocraft/training_weights/xps/musicongen`.
-
-Before training, you should set your username in environment variable
-```shell
-export env USER=$YOUR_USER_NAME
-```
-
-If using single gpu to finetune, you can use the following command:
-```shell
-dora run solver=musicgen/single_finetune \
-    conditioner=chord2music_inattn.yaml \
-    continue_from=//sig/musicongen \ 
-    compression_model_checkpoint=//pretrained/facebook/encodec_32khz \
-    model/lm/model_scale=medium dset=audio/example \
-    transformer_lm.n_q=4 transformer_lm.card=2048
-```
-the `continue_from` argument can be also provided with your absolute path of your checkpoint. 
-
-If you are using multiple(4) gpus to finetune, you can use the following command:
-```shell
-dora run -d solver=musicgen/multigpu_finetune \
-    conditioner=chord2music_inattn.yaml \
-    continue_from=//sig/musicongen \ 
-    compression_model_checkpoint=//pretrained/facebook/encodec_32khz \
-    model/lm/model_scale=medium dset=audio/example \
-    transformer_lm.n_q=4 transformer_lm.card=2048
-```
-
-<br />
-
-### export weight
-use `export_weight.py` with your training signature `sig` to export your weight to `output_dir`.
-
-<br />
-
-## License
-The license of code and model weights follows the [LICENSE file](https://github.com/Cyan0731/MusiConGen/blob/main/LICENSE), LICENSE of MusicGen in [LICENSE file](https://github.com/facebookresearch/audiocraft/blob/main/LICENSE) and [LICENSE_weights file](https://github.com/facebookresearch/audiocraft/blob/main/LICENSE_weights).
-
-<br />
 
 ## Citation
 ```bibtex
